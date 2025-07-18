@@ -1,0 +1,9 @@
+# Ignorar a pasta de dependências do Node.js
+/node_modules
+
+# Ignorar arquivos de log do npm
+npm-debug.log*
+
+# Ignorar o arquivo CSS gerado pelo Tailwind
+# Apenas o input.css precisa estar no repositório.
+/css/output.css
