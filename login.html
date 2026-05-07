@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login Restrito - Contato Contabilidade</title>
+    <link href="./css/output.css" rel="stylesheet" />
+  </head>
+  <body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div
+      class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md border-t-4 border-brand-yellow"
+      x-data="loginForm()"
+    >
+      <div class="text-center mb-8">
+        <img
+          src="https://res.cloudinary.com/dc0qqgkmp/image/upload/v1753121735/contato/logo-contato__xnri7i.svg"
+          alt="Logo Contato"
+          class="h-12 mx-auto mb-4"
+        />
+        <h1 class="text-2xl font-bold text-brand-blue">Acesso Restrito</h1>
+        <p class="text-gray-500 text-sm mt-1">
+          Painel de publicação de artigos
+        </p>
+      </div>
+
+      <form @submit.prevent="fazerLogin">
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2"
+            >E-mail</label
+          >
+          <input
+            x-model="email"
+            type="email"
+            required
+            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue"
+          />
+        </div>
+        <div class="mb-6">
+          <label class="block text-gray-700 text-sm font-bold mb-2"
+            >Senha</label
+          >
+          <input
+            x-model="password"
+            type="password"
+            required
+            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-blue"
+          />
+        </div>
+
+        <div
+          x-show="erro"
+          x-text="erro"
+          class="text-red-500 text-sm mb-4 text-center font-semibold"
+          style="display: none"
+        ></div>
+
+        <button
+          type="submit"
+          :disabled="carregando"
+          class="w-full bg-brand-blue text-white font-bold py-3 px-4 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
+        >
+          <span x-show="!carregando">Entrar no Painel</span>
+          <span x-show="carregando">Autenticando...</span>
+        </button>
+        <a
+          href="/"
+          class="block text-center mt-4 text-sm text-gray-500 hover:text-brand-blue transition-colors"
+          >Voltar para o site</a
+        >
+      </form>
+    </div>
+
+    <script type="module">
+      // 1. Importa o Supabase
+      import { supabase } from "./js/supabase.js";
+      // 2. Importa o Alpine.js diretamente como módulo
+      import Alpine from "https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/module.esm.js";
+
+      // 3. Regista o componente de login
+      Alpine.data("loginForm", () => ({
+        email: "",
+        password: "",
+        erro: "",
+        carregando: false,
+
+        async init() {
+          // Se já estiver logado, redireciona
+          const {
+            data: { session },
+          } = await supabase.auth.getSession();
+          if (session) window.location.href = "painel.html";
+        },
+
+        async fazerLogin() {
+          this.carregando = true;
+          this.erro = "";
+
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email: this.email,
+            password: this.password,
+          });
+
+          if (error) {
+            this.erro = "E-mail ou senha inválidos.";
+            this.carregando = false;
+          } else {
+            window.location.href = "painel.html";
+          }
+        },
+      }));
+
+      // 4. Arranca o Alpine DEPOIS de tudo estar registado!
+      window.Alpine = Alpine;
+      Alpine.start();
+    </script>
+  </body>
+</html>

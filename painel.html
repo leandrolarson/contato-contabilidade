@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="pt-PT">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Painel de Publicação - Contato Contabilidade</title>
+
+    <link href="./css/output.css" rel="stylesheet" />
+  </head>
+  <body class="bg-gray-100" x-data="painelEditor()">
+    <nav class="bg-brand-blue text-white p-4 shadow-md">
+      <div
+        class="container mx-auto flex justify-between items-center max-w-5xl"
+      >
+        <h1 class="font-bold text-xl flex items-center gap-3">
+          <img
+            src="https://res.cloudinary.com/dc0qqgkmp/image/upload/v1753121735/contato/logo-contato__xnri7i.svg"
+            class="h-8 filter brightness-0 invert"
+            alt="Logo"
+          />
+          <span>Gestor de Artigos</span>
+        </h1>
+        <div class="flex gap-6 items-center">
+          <a
+            href="/"
+            target="_blank"
+            class="text-sm hover:text-brand-yellow transition-colors"
+            >Ver Site</a
+          >
+          <button
+            @click="fazerLogout()"
+            class="text-sm font-bold bg-white text-brand-blue px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            Sair
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <main
+      class="container mx-auto max-w-5xl p-6 mt-8 mb-20 bg-white rounded-xl shadow-lg border-t-8 border-brand-yellow"
+    >
+      <div class="mb-8">
+        <label
+          class="block text-brand-blue text-sm font-black uppercase tracking-wider mb-2"
+          >Título da Notícia</label
+        >
+        <input
+          x-model="titulo"
+          type="text"
+          class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue text-xl font-bold text-gray-800"
+          placeholder="Ex: Guia Prático: Como declarar o IRS em 2026"
+        />
+      </div>
+
+      <div class="mb-8">
+        <label
+          class="block text-brand-blue text-sm font-black uppercase tracking-wider mb-2"
+          >Resumo Curto (Para a listagem)</label
+        >
+        <textarea
+          x-model="resumo"
+          class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue text-gray-600"
+          rows="2"
+          placeholder="Escreva uma breve introdução que chame a atenção do leitor..."
+        ></textarea>
+      </div>
+
+      <div class="mb-8">
+        <label
+          class="block text-brand-blue text-sm font-black uppercase tracking-wider mb-2"
+          >Conteúdo do Artigo</label
+        >
+        <div
+          id="editorjs"
+          class="border-2 border-gray-100 rounded-xl p-8 bg-gray-50 min-h-[500px] prose prose-slate max-w-none shadow-inner"
+        ></div>
+      </div>
+
+      <div
+        class="flex items-center justify-between mt-10 pt-6 border-t-2 border-gray-50"
+      >
+        <div>
+          <p
+            x-show="mensagem"
+            x-text="mensagem"
+            class="text-green-600 font-bold bg-green-50 px-4 py-2 rounded-lg"
+            style="display: none"
+          ></p>
+        </div>
+
+        <button
+          @click="guardarArtigo()"
+          :disabled="carregando"
+          class="bg-brand-blue text-white font-black py-4 px-10 rounded-xl hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 transition-all shadow-lg flex items-center gap-2"
+        >
+          <span x-show="!carregando">🚀 Publicar Notícia</span>
+          <span x-show="carregando" class="flex items-center gap-2">
+            <svg
+              class="animate-spin h-5 w-5 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            A processar...
+          </span>
+        </button>
+      </div>
+    </main>
+
+    <script type="module" src="./js/painel.js"></script>
+  </body>
+</html>
