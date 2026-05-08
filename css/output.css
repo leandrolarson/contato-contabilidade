@@ -2606,10 +2606,6 @@ html {
     height: 5rem;
   }
 
-  .md\:h-2 {
-    height: 0.5rem;
-  }
-
   .md\:w-2\/3 {
     width: 66.666667%;
   }
