@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lendo Artigo - Contato Contabilidade</title>
+    <link href="./css/output.css" rel="stylesheet" />
+    <style>
+      [x-cloak] {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body class="bg-white font-sans text-gray-900" x-data="detalheArtigo()">
+    <header class="bg-brand-blue text-white py-6">
+      <div
+        class="container mx-auto px-6 max-w-4xl flex justify-between items-center"
+      >
+        <a href="noticias.html" class="font-bold hover:text-brand-yellow"
+          >← Todas as notícias</a
+        >
+        <img
+          src="https://res.cloudinary.com/dc0qqgkmp/image/upload/v1753121735/contato/logo-contato__xnri7i.svg"
+          class="h-8 filter brightness-0 invert"
+          alt="Logo"
+        />
+      </div>
+    </header>
+
+    <main class="container mx-auto px-6 max-w-4xl py-12 min-h-screen">
+      <template x-if="carregando">
+        <div class="text-center py-20 text-gray-400">
+          Carregando conteúdo...
+        </div>
+      </template>
+
+      <article x-show="!carregando && artigo" x-cloak>
+        <header class="mb-10 text-center">
+          <span
+            class="text-brand-yellow font-bold uppercase tracking-widest text-sm"
+            x-text="formatarData(artigo.created_at)"
+          ></span>
+          <h1
+            class="text-4xl md:text-5xl font-black text-brand-blue mt-4 mb-6 leading-tight"
+            x-text="artigo.titulo"
+          ></h1>
+          <p class="text-xl text-gray-500 italic" x-text="artigo.resumo"></p>
+        </header>
+
+        <template x-if="artigo.imagem_capa">
+          <img
+            :src="artigo.imagem_capa"
+            loading="lazy"
+            class="w-full h-[400px] object-cover rounded-3xl shadow-2xl mb-12"
+          />
+        </template>
+
+        <div
+          class="prose prose-lg md:prose-xl prose-slate max-w-none prose-headings:text-brand-blue prose-a:text-brand-yellow prose-img:rounded-2xl"
+          x-html="renderizarConteudo(artigo.conteudo)"
+        ></div>
+
+        <div class="my-16 border-t border-gray-100"></div>
+
+        <section class="bg-gray-50 p-8 rounded-3xl">
+          <h3 class="text-2xl font-bold text-brand-blue mb-8">Comentários</h3>
+          <div
+            id="cusdis_thread"
+            data-host="https://cusdis.com"
+            data-app-id="9107110e-e96b-4154-9065-7166e42d9f24"
+            :data-page-id="artigo.id"
+            :data-page-url="window.location.href"
+            :data-page-title="artigo.titulo"
+          ></div>
+        </section>
+      </article>
+    </main>
+
+    <script async defer src="https://cusdis.com/js/cusdis.es.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js"></script>
+
+    <script type="module">
+      import { supabase } from "./js/supabase.js";
+      import Alpine from "https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/module.esm.js";
+
+      Alpine.data("detalheArtigo", () => ({
+        artigo: null,
+        carregando: true,
+
+        async init() {
+          const params = new URLSearchParams(window.location.search);
+          const slug = params.get("slug");
+
+          if (!slug) {
+            window.location.href = "noticias.html";
+            return;
+          }
+
+          const { data, error } = await supabase
+            .from("artigos")
+            .select("*")
+            .eq("slug", slug)
+            .eq("publicado", true)
+            .single();
+
+          if (error || !data) {
+            alert("Artigo não encontrado");
+            window.location.href = "noticias.html";
+          } else {
+            this.artigo = data;
+            document.title = `${data.titulo} - Contato Contabilidade`;
+            let meta = document.querySelector('meta[name="description"]');
+
+            if (!meta) {
+              meta = document.createElement("meta");
+              meta.name = "description";
+              document.head.appendChild(meta);
+            }
+
+            meta.content = data.resumo || "";
+          }
+          this.carregando = false;
+        },
+
+        formatarData(dataIso) {
+          return new Date(dataIso).toLocaleDateString("pt-BR", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          });
+        },
+
+        // Converte o JSON do Editor.js para HTML real
+        renderizarConteudo(conteudo) {
+          if (!conteudo || !conteudo.blocks) return "";
+
+          const html = conteudo.blocks
+            .map((block) => {
+              switch (block.type) {
+                case "header":
+                  return `
+            <h${block.data.level}>
+              ${block.data.text}
+            </h${block.data.level}>
+          `;
+
+                case "paragraph":
+                  return `
+            <p>${block.data.text}</p>
+          `;
+
+                case "list":
+                  const tag = block.data.style === "ordered" ? "ol" : "ul";
+
+                  const items = block.data.items
+                    .map((item) => `<li>${item}</li>`)
+                    .join("");
+
+                  return `<${tag}>${items}</${tag}>`;
+
+                case "image":
+                  return `
+            <figure>
+              <img
+                src="${block.data?.file?.url || ""}"
+                alt="${block.data.caption || ""}"
+                loading="lazy"
+              >
+
+              <figcaption
+                class="text-center text-sm text-gray-400 mt-2"
+              >
+                ${block.data.caption || ""}
+              </figcaption>
+            </figure>
+          `;
+
+                default:
+                  return `
+            <div class="text-red-500">
+              Bloco não suportado: ${block.type}
+            </div>
+          `;
+              }
+            })
+            .join("");
+
+          return DOMPurify.sanitize(html);
+        },
+      }));
+
+      window.Alpine = Alpine;
+      Alpine.start();
+    </script>
+  </body>
+</html>
