@@ -135,7 +135,16 @@
         renderizarConteudo(conteudo) {
           if (!conteudo || !conteudo.blocks) return "";
 
-          const html = conteudo.blocks
+          const blocosFiltrados = [...conteudo.blocks];
+
+          if (
+            blocosFiltrados[0]?.type === "image" &&
+            blocosFiltrados[0]?.data?.file?.url === this.artigo.imagem_capa
+          ) {
+            blocosFiltrados.shift();
+          }
+
+          const html = blocosFiltrados
             .map((block) => {
               switch (block.type) {
                 case "header":
