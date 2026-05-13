@@ -47,14 +47,6 @@
           <p class="text-xl text-gray-500 italic" x-text="artigo.resumo"></p>
         </header>
 
-        <template x-if="artigo.imagem_capa">
-          <img
-            :src="artigo.imagem_capa"
-            loading="lazy"
-            class="w-full h-[400px] object-cover rounded-3xl shadow-2xl mb-12"
-          />
-        </template>
-
         <div
           class="prose prose-lg md:prose-xl prose-slate max-w-none prose-headings:text-brand-blue prose-a:text-brand-yellow prose-img:rounded-2xl"
           x-html="renderizarConteudo(artigo.conteudo)"
