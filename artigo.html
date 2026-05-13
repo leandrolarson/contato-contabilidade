@@ -153,11 +153,28 @@
                 case "list":
                   const tag = block.data.style === "ordered" ? "ol" : "ul";
 
-                  const items = block.data.items
-                    .map((item) => `<li>${item}</li>`)
-                    .join("");
+                  const renderItems = (items) => {
+                    return items
+                      .map((item) => {
+                        if (typeof item === "string") {
+                          return `<li>${item}</li>`;
+                        }
 
-                  return `<${tag}>${items}</${tag}>`;
+                        return `
+          <li>
+            ${item.content}
+            ${
+              item.items?.length
+                ? `<${tag}>${renderItems(item.items)}</${tag}>`
+                : ""
+            }
+          </li>
+        `;
+                      })
+                      .join("");
+                  };
+
+                  return `<${tag}>${renderItems(block.data.items)}</${tag}>`;
 
                 case "image":
                   return `

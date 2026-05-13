@@ -2,7 +2,7 @@ import Alpine from "https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/module.esm.
 
 import EditorJS from "https://esm.sh/@editorjs/editorjs";
 import Header from "https://esm.sh/@editorjs/header";
-import List from "https://esm.sh/@editorjs/list";
+import EditorjsList from "https://esm.sh/@editorjs/list";
 import ImageTool from "https://esm.sh/@editorjs/image";
 
 import { supabase } from "./supabase.js";
@@ -20,6 +20,7 @@ document.addEventListener("alpine:init", () => {
       resumo: "",
       mensagem: "",
       carregando: false,
+      artigoId: null,
 
       async init() {
         // 1. Verificação de Segurança
@@ -33,6 +34,11 @@ document.addEventListener("alpine:init", () => {
 
         await this.$nextTick();
 
+        const params = new URLSearchParams(window.location.search);
+        const artigoId = params.get("id");
+
+        this.artigoId = artigoId;
+
         // 2. Inicialização do Editor.js (Usamos 'editor' e não 'this.editor')
         editor = new EditorJS({
           holder: "editorjs",
@@ -42,7 +48,11 @@ document.addEventListener("alpine:init", () => {
               class: Header,
             },
             list: {
-              class: List,
+              class: EditorjsList,
+              inlineToolbar: true,
+              config: {
+                defaultStyle: "unordered",
+              },
             },
 
             image: {
@@ -74,6 +84,23 @@ document.addEventListener("alpine:init", () => {
             },
           },
         });
+
+        await editor.isReady;
+
+        if (artigoId) {
+          const { data, error } = await supabase
+            .from("artigos")
+            .select("*")
+            .eq("id", artigoId)
+            .single();
+
+          if (data) {
+            this.titulo = data.titulo;
+            this.resumo = data.resumo;
+
+            await editor.render(data.conteudo);
+          }
+        }
       },
 
       async guardarArtigo() {
@@ -99,25 +126,37 @@ document.addEventListener("alpine:init", () => {
             conteudoJson.blocks.find((b) => b.type === "image")?.data?.file
               ?.url || "";
 
-          const { error } = await supabase.from("artigos").insert([
-            {
-              titulo: this.titulo,
-              resumo: this.resumo,
-              conteudo: conteudoJson,
-              slug: slug,
-              imagem_capa: imagemCapa,
-            },
-          ]);
+          const payload = {
+            titulo: this.titulo,
+            resumo: this.resumo,
+            conteudo: conteudoJson,
+            slug: slug,
+            imagem_capa: imagemCapa,
+          };
+
+          let error;
+
+          if (this.artigoId) {
+            ({ error } = await supabase
+              .from("artigos")
+              .update(payload)
+              .eq("id", this.artigoId));
+          } else {
+            ({ error } = await supabase.from("artigos").insert([payload]));
+          }
 
           if (error) throw error;
 
           this.mensagem = "✅ Artigo publicado com sucesso!";
 
           setTimeout(() => {
-            this.titulo = "";
-            this.resumo = "";
-            editor.clear(); // Limpa o editor
             this.mensagem = "";
+
+            if (!this.artigoId) {
+              this.titulo = "";
+              this.resumo = "";
+              editor.clear();
+            }
           }, 3000);
         } catch (err) {
           console.error(err);

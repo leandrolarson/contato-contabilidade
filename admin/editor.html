@@ -3,7 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Painel de Publicação - Contato Contabilidade</title>
+    <title x-text="artigoId ? 'Editar Artigo' : 'Novo Artigo'">
+      Painel de Publicação
+    </title>
 
     <link href="/css/output.css" rel="stylesheet" />
   </head>
@@ -94,7 +96,11 @@
           :disabled="carregando"
           class="bg-brand-blue text-white font-black py-4 px-10 rounded-xl hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 transition-all shadow-lg flex items-center gap-2"
         >
-          <span x-show="!carregando">🚀 Publicar Notícia</span>
+          <span x-show="!carregando">
+            <span
+              x-text="artigoId ? '💾 Atualizar Notícia' : '🚀 Publicar Notícia'"
+            ></span>
+          </span>
           <span x-show="carregando" class="flex items-center gap-2">
             <svg
               class="animate-spin h-5 w-5 text-white"
